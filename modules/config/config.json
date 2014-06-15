@@ -1,0 +1,7 @@
+{
+    "port": 3000,
+    "instagram": {
+        "client_id": "ec1963be92724858afaa905745fabc26",
+        "client_secret": "bd6bc4d4fa4e412e80e3f0192f4ef93f"
+    }
+}
