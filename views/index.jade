@@ -4,8 +4,13 @@ html
 		title Instagram Photos
 		link(rel='stylesheet', href='/css/bootstrap.css.map')
 		link(rel='stylesheet', href='/css/bootstrap.min.css')
-		script(src='/js/bootstrap.min.js')
+		link(rel='stylesheet', href='/css/style.css')
 		script(src='http://api-maps.yandex.ru/2.1/?lang=ru_RU', type='text/javascript')
+		script(src='/js/require/index.js')
+		script.
+			require(['cookies', 'instagram', 'jquery', 'bootstrap', 'map'])
 	body
 		h1 Instagram photos
 		p Hello!
+		#map
+		#photoContent

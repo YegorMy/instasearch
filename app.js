@@ -12,6 +12,7 @@ var bodyParser = require('body-parser');
 var csrf = require('csurf');
 var session = require('cookie-session');
 var favicon = require('serve-favicon');
+var cookieParser = require('cookie-parser');
 var passport = require('passport'),
     InstagramStrategy = require('passport-instagram').Strategy;
 var config = require('./modules/config');
@@ -25,8 +26,9 @@ app.configure(function() {
     app.use(bodyParser.urlencoded());
     app.use(bodyParser.json());
     app.use(session({
-        keys: ['key1', 'key2']
-    }))
+        keys: ['key1']
+    }));
+    app.use(cookieParser());
     app.use(csrf());
     app.use(passport.initialize());
     app.use(passport.session());
@@ -42,26 +44,40 @@ passport.use(new InstagramStrategy({
         callbackURL: "http://127.0.0.1:3000/auth/instagram/callback"
     },
     function(accessToken, refreshToken, profile, done) {
-        console.log(accessToken);
-        console.log(profile);
-
-        process.nextTick(done(null, profile));
+        done(null, accessToken, profile);
     }
 ));
-app.get('/auth/instagram/callback',
-    function(req, res, next) {
-        passport.authenticate('instagram', function(accessToken, user) {
-            console.log(accessToken);
-        });
+
+app.get('*', function(req, res, next) {
+    if (!req.cookies.accessToken) {
+        res.redirect('/auth/instagram');
     }
-);
+    next();
+});
 
 app.get('/auth/instagram',
-    passport.authenticate('instagram'),
+    function(req, res, next) {
+        if (!req.cookies.accessToken) {
+            next();
+        } else {
+            res.redirect('/');
+        }
+    },
+    passport.authenticate('instagram'));
+
+app.get('/auth/instagram/callback',
     function(req, res) {
-        console.log('authed');
-    }
-);
+        try {
+            passport.authenticate('instagram', function(err, token) {
+                res.cookie('token', token)
+
+                console.log('token set :' + token);
+                res.redirect('/');
+            })(req, res)
+        } catch (e) {
+            console.log('error');
+        }
+    });
 
 
 app.listen(config.get('port'), function(){
